@@ -40,6 +40,7 @@ struct riscv_private_data
 
 static const char * const *riscv_gpr_names;
 static const char * const *riscv_fpr_names;
+static const char * const *riscv_hpr_names;
 
 /* Other options.  */
 static int no_aliases;	/* If set disassemble as most general inst.  */
@@ -49,6 +50,7 @@ set_default_riscv_dis_options (void)
 {
   riscv_gpr_names = riscv_gpr_names_abi;
   riscv_fpr_names = riscv_fpr_names_abi;
+  riscv_hpr_names = riscv_hpr_names_abi;
   no_aliases = 0;
 }
 
@@ -61,6 +63,7 @@ parse_riscv_dis_option (const char *option)
     {
       riscv_gpr_names = riscv_gpr_names_numeric;
       riscv_fpr_names = riscv_fpr_names_numeric;
+      riscv_hpr_names = riscv_hpr_names_numeric;
     }
   else
     {
@@ -315,6 +318,24 @@ print_insn_args (const char *d, insn_t l, bfd_vma pc, disassemble_info *info)
 	case 'R':
 	  print (info->stream, "%s", riscv_fpr_names[EXTRACT_OPERAND (RS3, l)]);
 	  break;
+
+	case 'G':
+	case 'V':
+	  print (info->stream, "%s", riscv_hpr_names[rs1]);
+	  break;
+
+	case 'J':
+	  print (info->stream, "%s", riscv_hpr_names[EXTRACT_OPERAND (RS2, l)]);
+	  break;
+
+	case 'H':
+	  print (info->stream, "%s", riscv_hpr_names[rd]);
+	  break;
+
+	case 'K':
+	  print (info->stream, "%s", riscv_hpr_names[EXTRACT_OPERAND (RS3, l)]);
+	  break;
+
 
 	case 'E':
 	  {

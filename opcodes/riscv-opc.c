@@ -49,11 +49,26 @@ const char * const riscv_fpr_names_numeric[NFPR] =
   "f24",  "f25",  "f26",  "f27",  "f28",  "f29",  "f30",  "f31"
 };
 
-const char * const riscv_fpr_names_abi[NFPR] = {
+const char * const riscv_fpr_names_abi[NHPR] = {
   "ft0", "ft1", "ft2",  "ft3",  "ft4", "ft5", "ft6",  "ft7",
   "fs0", "fs1", "fa0",  "fa1",  "fa2", "fa3", "fa4",  "fa5",
   "fa6", "fa7", "fs2",  "fs3",  "fs4", "fs5", "fs6",  "fs7",
   "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
+};
+
+const char * const riscv_hpr_names_numeric[NHPR] =
+{
+  "h0",   "h1",   "h2",   "h3",   "h4",   "h5",   "h6",   "h7",
+  "h8",   "h9",   "h10",  "h11",  "h12",  "h13",  "h14",  "h15",
+  "h16",  "h17",  "h18",  "h19",  "h20",  "h21",  "h22",  "h23",
+  "h24",  "h25",  "h26",  "h27",  "h28",  "h29",  "h30",  "h31"
+};
+
+const char * const riscv_hpr_names_abi[NFPR] = {
+  "ht0", "ht1", "ht2",  "ht3",  "ht4", "ht5", "ht6",  "ht7",
+  "hs0", "hs1", "ha0",  "ha1",  "ha2", "ha3", "ha4",  "ha5",
+  "ha6", "ha7", "hs2",  "hs3",  "hs4", "hs5", "hs6",  "hs7",
+  "hs8", "hs9", "hs10", "hs11", "ht8", "ht9", "ht10", "ht11"
 };
 
 /* The order of overloaded instructions matters.  Label arguments and
@@ -606,6 +621,66 @@ const struct riscv_opcode riscv_opcodes[] =
 {"fcvt.q.l",  "64Q", "D,s,m",  MATCH_FCVT_Q_L, MASK_FCVT_Q_L, match_opcode, 0 },
 {"fcvt.q.lu", "64Q", "D,s",  MATCH_FCVT_Q_LU | MASK_RM, MASK_FCVT_Q_L | MASK_RM, match_opcode, 0 },
 {"fcvt.q.lu", "64Q", "D,s,m",  MATCH_FCVT_Q_LU, MASK_FCVT_Q_LU, match_opcode, 0 },
+
+/* Half-precision floating-point instruction subset */
+{"flh",       "H",   "H,o(s)",  MATCH_FLH, MASK_FLH, match_opcode, 0 },
+{"flh",       "H",   "H,A,s",  0, (int) M_HLH, match_never, INSN_MACRO },
+{"fsh",       "H",   "J,q(s)",  MATCH_FSH, MASK_FSH, match_opcode, 0 },
+{"fsh",       "H",   "J,A,s",  0, (int) M_HSH, match_never, INSN_MACRO },
+{"fmv.h",     "H",   "H,V",  MATCH_FSGNJ_H, MASK_FSGNJ_H, match_rs1_eq_rs2, INSN_ALIAS },
+{"fneg.h",    "H",   "H,V",  MATCH_FSGNJN_H, MASK_FSGNJN_H, match_rs1_eq_rs2, INSN_ALIAS },
+{"fabs.h",    "H",   "H,V",  MATCH_FSGNJX_H, MASK_FSGNJX_H, match_rs1_eq_rs2, INSN_ALIAS },
+{"fsgnj.h",   "H",   "H,G,J",  MATCH_FSGNJ_H, MASK_FSGNJ_H, match_opcode, 0 },
+{"fsgnjn.h",  "H",   "H,G,J",  MATCH_FSGNJN_H, MASK_FSGNJN_H, match_opcode, 0 },
+{"fsgnjx.h",  "H",   "H,G,J",  MATCH_FSGNJX_H, MASK_FSGNJX_H, match_opcode, 0 },
+{"fadd.h",    "H",   "H,G,J",  MATCH_FADD_H | MASK_RM, MASK_FADD_H | MASK_RM, match_opcode, 0 },
+{"fadd.h",    "H",   "H,G,J,m",  MATCH_FADD_H, MASK_FADD_H, match_opcode, 0 },
+{"fsub.h",    "H",   "H,G,J",  MATCH_FSUB_H | MASK_RM, MASK_FSUB_H | MASK_RM, match_opcode, 0 },
+{"fsub.h",    "H",   "H,G,J,m",  MATCH_FSUB_H, MASK_FSUB_H, match_opcode, 0 },
+{"fmul.h",    "H",   "H,G,J",  MATCH_FMUL_H | MASK_RM, MASK_FMUL_H | MASK_RM, match_opcode, 0 },
+{"fmul.h",    "H",   "H,G,J,m",  MATCH_FMUL_H, MASK_FMUL_H, match_opcode, 0 },
+{"fdiv.h",    "H",   "H,G,J",  MATCH_FDIV_H | MASK_RM, MASK_FDIV_H | MASK_RM, match_opcode, 0 },
+{"fdiv.h",    "H",   "H,G,J,m",  MATCH_FDIV_H, MASK_FDIV_H, match_opcode, 0 },
+{"fsqrt.h",   "H",   "H,G",  MATCH_FSQRT_H | MASK_RM, MASK_FSQRT_H | MASK_RM, match_opcode, 0 },
+{"fsqrt.h",   "H",   "H,G,m",  MATCH_FSQRT_H, MASK_FSQRT_H, match_opcode, 0 },
+{"fmin.h",    "H",   "H,G,J",  MATCH_FMIN_H, MASK_FMIN_H, match_opcode, 0 },
+{"fmax.h",    "H",   "H,G,J",  MATCH_FMAX_H, MASK_FMAX_H, match_opcode, 0 },
+{"fmadd.h",   "H",   "H,G,J,K",  MATCH_FMADD_H | MASK_RM, MASK_FMADD_H | MASK_RM, match_opcode, 0 },
+{"fmadd.h",   "H",   "H,G,J,K,m",  MATCH_FMADD_H, MASK_FMADD_H, match_opcode, 0 },
+{"fnmadd.h",  "H",   "H,G,J,K",  MATCH_FNMADD_H | MASK_RM, MASK_FNMADD_H | MASK_RM, match_opcode, 0 },
+{"fnmadd.h",  "H",   "H,G,J,K,m",  MATCH_FNMADD_H, MASK_FNMADD_H, match_opcode, 0 },
+{"fmsub.h",   "H",   "H,G,J,K",  MATCH_FMSUB_H | MASK_RM, MASK_FMSUB_H | MASK_RM, match_opcode, 0 },
+{"fmsub.h",   "H",   "H,G,J,K,m",  MATCH_FMSUB_H, MASK_FMSUB_H, match_opcode, 0 },
+{"fnmsub.h",  "H",   "H,G,J,K",  MATCH_FNMSUB_H | MASK_RM, MASK_FNMSUB_H | MASK_RM, match_opcode, 0 },
+{"fnmsub.h",  "H",   "H,G,J,K,m",  MATCH_FNMSUB_H, MASK_FNMSUB_H, match_opcode, 0 },
+{"fcvt.w.h",  "H",   "d,G",  MATCH_FCVT_W_H | MASK_RM, MASK_FCVT_W_H | MASK_RM, match_opcode, 0 },
+{"fcvt.w.h",  "H",   "d,G,m",  MATCH_FCVT_W_H, MASK_FCVT_W_H, match_opcode, 0 },
+{"fcvt.wu.h", "H",   "d,G",  MATCH_FCVT_WU_H | MASK_RM, MASK_FCVT_WU_H | MASK_RM, match_opcode, 0 },
+{"fcvt.wu.h", "H",   "d,G,m",  MATCH_FCVT_WU_H, MASK_FCVT_WU_H, match_opcode, 0 },
+{"fcvt.h.w",  "H",   "H,s",  MATCH_FCVT_H_W, MASK_FCVT_H_W | MASK_RM, match_opcode, 0 },
+{"fcvt.h.wu", "H",   "H,s",  MATCH_FCVT_H_WU, MASK_FCVT_H_WU | MASK_RM, match_opcode, 0 },
+{"fcvt.h.s",  "H",   "H,G",  MATCH_FCVT_H_S, MASK_FCVT_H_S | MASK_RM, match_opcode, 0 },
+{"fcvt.h.d",  "H",   "H,G",  MATCH_FCVT_H_D, MASK_FCVT_H_D | MASK_RM, match_opcode, 0 },
+{"fcvt.s.h",  "H",   "H,G",  MATCH_FCVT_S_H | MASK_RM, MASK_FCVT_S_H | MASK_RM, match_opcode, 0 },
+{"fcvt.s.h",  "H",   "H,G,m",  MATCH_FCVT_S_H, MASK_FCVT_S_H, match_opcode, 0 },
+{"fcvt.d.h",  "H",   "H,G",  MATCH_FCVT_D_H | MASK_RM, MASK_FCVT_D_H | MASK_RM, match_opcode, 0 },
+{"fcvt.d.h",  "H",   "H,G,m",  MATCH_FCVT_D_H, MASK_FCVT_D_H, match_opcode, 0 },
+{"fclass.h",  "H",   "d,G",  MATCH_FCLASS_H, MASK_FCLASS_H, match_opcode, 0 },
+{"feq.h",     "H",   "d,G,J",    MATCH_FEQ_H, MASK_FEQ_H, match_opcode, 0 },
+{"flt.h",     "H",   "d,G,J",    MATCH_FLT_H, MASK_FLT_H, match_opcode, 0 },
+{"fle.h",     "H",   "d,G,J",    MATCH_FLE_H, MASK_FLE_H, match_opcode, 0 },
+{"fgt.h",     "H",   "d,J,G",    MATCH_FLT_H, MASK_FLT_H, match_opcode, 0 },
+{"fge.h",     "H",   "d,J,G",    MATCH_FLE_H, MASK_FLE_H, match_opcode, 0 },
+{"fmv.x.h",   "64H", "d,G",  MATCH_FMV_X_H, MASK_FMV_X_H, match_opcode, 0 },
+{"fmv.h.x",   "64H", "H,s",  MATCH_FMV_H_X, MASK_FMV_H_X, match_opcode, 0 },
+{"fcvt.l.h",  "64H", "d,G",  MATCH_FCVT_L_H | MASK_RM, MASK_FCVT_L_H | MASK_RM, match_opcode, 0 },
+{"fcvt.l.h",  "64H", "d,G,m",  MATCH_FCVT_L_H, MASK_FCVT_L_H, match_opcode, 0 },
+{"fcvt.lu.h", "64H", "d,G",  MATCH_FCVT_LU_H | MASK_RM, MASK_FCVT_LU_H | MASK_RM, match_opcode, 0 },
+{"fcvt.lu.h", "64H", "d,G,m",  MATCH_FCVT_LU_H, MASK_FCVT_LU_H, match_opcode, 0 },
+{"fcvt.h.l",  "64H", "H,s",  MATCH_FCVT_H_L | MASK_RM, MASK_FCVT_H_L | MASK_RM, match_opcode, 0 },
+{"fcvt.h.l",  "64H", "H,s,m",  MATCH_FCVT_H_L, MASK_FCVT_H_L, match_opcode, 0 },
+{"fcvt.h.lu", "64H", "H,s",  MATCH_FCVT_H_LU | MASK_RM, MASK_FCVT_H_L | MASK_RM, match_opcode, 0 },
+{"fcvt.h.lu", "64H", "H,s,m",  MATCH_FCVT_H_LU, MASK_FCVT_H_LU, match_opcode, 0 },
 
 /* Compressed instructions.  */
 {"c.ebreak",  "C",   "",  MATCH_C_EBREAK, MASK_C_EBREAK, match_opcode, 0 },

@@ -135,7 +135,7 @@ riscv_add_subset (const char *subset)
 static void
 riscv_set_arch (const char *s)
 {
-  const char *all_subsets = "imafdc";
+  const char *all_subsets = "imafdch";
   const char *extension = NULL;
   const char *p = s;
 
@@ -391,6 +391,7 @@ enum reg_class
 {
   RCLASS_GPR,
   RCLASS_FPR,
+  RCLASS_HPR,
   RCLASS_CSR,
   RCLASS_MAX
 };
@@ -547,6 +548,11 @@ validate_riscv_insn (const struct riscv_opcode *opc)
       case 'S':	USE_BITS (OP_MASK_RS1,		OP_SH_RS1);	break;
       case 'U':	USE_BITS (OP_MASK_RS1,		OP_SH_RS1);	/* fallthru */
       case 'T':	USE_BITS (OP_MASK_RS2,		OP_SH_RS2);	break;
+      case 'H':	USE_BITS (OP_MASK_RD,		OP_SH_RD);	break;
+      case 'K':	USE_BITS (OP_MASK_RS3,		OP_SH_RS3);	break;
+      case 'G':	USE_BITS (OP_MASK_RS1,		OP_SH_RS1);	break;
+      case 'V':	USE_BITS (OP_MASK_RS1,		OP_SH_RS1);	/* fallthru */
+      case 'J':	USE_BITS (OP_MASK_RS2,		OP_SH_RS2);	break;
       case 'd':	USE_BITS (OP_MASK_RD,		OP_SH_RD);	break;
       case 'm':	USE_BITS (OP_MASK_RM,		OP_SH_RM);	break;
       case 's':	USE_BITS (OP_MASK_RS1,		OP_SH_RS1);	break;
@@ -630,6 +636,8 @@ md_begin (void)
   hash_reg_names (RCLASS_GPR, riscv_gpr_names_abi, NGPR);
   hash_reg_names (RCLASS_FPR, riscv_fpr_names_numeric, NFPR);
   hash_reg_names (RCLASS_FPR, riscv_fpr_names_abi, NFPR);
+  hash_reg_names (RCLASS_HPR, riscv_hpr_names_numeric, NHPR);
+  hash_reg_names (RCLASS_HPR, riscv_hpr_names_abi, NHPR);
 
 #define DECLARE_CSR(name, num) hash_reg_name (RCLASS_CSR, #name, num);
 #include "opcode/riscv-opc.h"
@@ -1549,6 +1557,40 @@ rvc_lui:
 
 	      break;
 
+	    case 'H':		/* Half-Floating point rd.  */
+	    case 'G':		/* Half-Floating point rs1.  */
+	    case 'J':		/* Half-Floating point rs2.  */
+	    case 'V':		/* Half-Floating point rs1 and rs2.  */
+	    case 'K':		/* Half-Floating point rs3.  */
+	      if (reg_lookup (&s, RCLASS_HPR, &regno))
+		{
+		  c = *args;
+		  if (*s == ' ')
+		    ++s;
+		  switch (c)
+		    {
+		    case 'H':
+		      INSERT_OPERAND (RD, *ip, regno);
+		      break;
+		    case 'G':
+		      INSERT_OPERAND (RS1, *ip, regno);
+		      break;
+		    case 'V':
+		      INSERT_OPERAND (RS1, *ip, regno);
+		      /* fallthru */
+		    case 'J':
+		      INSERT_OPERAND (RS2, *ip, regno);
+		      break;
+		    case 'K':
+		      INSERT_OPERAND (RS3, *ip, regno);
+		      break;
+		    }
+		  continue;
+		}
+
+	      break;
+
+
 	    case 'I':
 	      my_getExpression (imm_expr, s);
 	      if (imm_expr->X_op != O_big
@@ -1727,7 +1769,8 @@ enum float_abi {
   FLOAT_ABI_SOFT,
   FLOAT_ABI_SINGLE,
   FLOAT_ABI_DOUBLE,
-  FLOAT_ABI_QUAD
+  FLOAT_ABI_QUAD,
+  FLOAT_ABI_HALF
 };
 static enum float_abi float_abi = FLOAT_ABI_DEFAULT;
 
@@ -1826,6 +1869,8 @@ riscv_after_parse_args (void)
 	    float_abi = FLOAT_ABI_DOUBLE;
 	  if (strcasecmp (subset->name, "Q") == 0)
 	    float_abi = FLOAT_ABI_QUAD;
+	  if (strcasecmp (subset->name, "H") == 0)
+	    float_abi = FLOAT_ABI_HALF;
 	}
     }
 

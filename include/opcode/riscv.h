@@ -245,6 +245,7 @@ static const char * const riscv_pred_succ[16] =
 
 #define NGPR 32
 #define NFPR 32
+#define NHPR 32
 
 /* Replace bits MASK << SHIFT of STRUCT with the equivalent bits in
    VALUE << SHIFT.  VALUE is evaluated exactly once.  */
@@ -327,6 +328,8 @@ enum
   M_FSW,
   M_FSD,
   M_FSQ,
+  M_HLH,
+  M_HSH,
   M_CALL,
   M_J,
   M_LI,
@@ -338,6 +341,8 @@ extern const char * const riscv_gpr_names_numeric[NGPR];
 extern const char * const riscv_gpr_names_abi[NGPR];
 extern const char * const riscv_fpr_names_numeric[NFPR];
 extern const char * const riscv_fpr_names_abi[NFPR];
+extern const char * const riscv_hpr_names_numeric[NHPR];
+extern const char * const riscv_hpr_names_abi[NHPR];
 
 extern const struct riscv_opcode riscv_opcodes[];
 
