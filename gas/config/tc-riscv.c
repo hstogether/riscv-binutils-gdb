@@ -135,7 +135,7 @@ riscv_add_subset (const char *subset)
 static void
 riscv_set_arch (const char *s)
 {
-  const char *all_subsets = "imafdch";
+  const char *all_subsets = "imafdhc";
   const char *extension = NULL;
   const char *p = s;
 
@@ -2539,6 +2539,10 @@ tc_riscv_regname_to_dw2regnum (char *regname)
 
   if ((reg = reg_lookup_internal (regname, RCLASS_FPR)) >= 0)
     return reg + 32;
+
+  if ((reg = reg_lookup_internal (regname, RCLASS_HPR)) >= 0)
+    return reg + 32;
+
 
   as_bad (_("unknown register `%s'"), regname);
   return -1;
